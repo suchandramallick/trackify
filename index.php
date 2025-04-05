@@ -12,6 +12,7 @@
 <body>
     <?php
     require('database.php');
+echo "Anand";
     include("constant/navbar.php");
 
     ?>
