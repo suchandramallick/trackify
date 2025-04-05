@@ -12,7 +12,7 @@
 <body>
     <?php
     require('database.php');
-echo "Anand";
+echo "suchnadra";
     include("constant/navbar.php");
 
     ?>
