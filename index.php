@@ -1,35 +1,16 @@
-<html>
+<?php 
+include 'auth/includes/header.php'; ?>
+<section class="relative h-screen flex items-center justify-center text-center bg-cover bg-center pt-20"
+    style="background-image: url('images/B1.jpg');">
+  <div class="bg-blue-900 bg-opacity-50 p-6 rounded-md max-w-2xl">
+    <p class="text-4xl font-light leading-relaxed mb-4">
+      <span class="text-5xl font-bold">“</span>We first make our habits,<br>then our habits make us.
+    </p>
+    <p class="italic text-lg mb-6">— John Dryden</p>
+    <a href="dashboard.php" class="bg-white text-blue-600 font-bold px-6 py-2 rounded-full hover:bg-blue-100 transition">GET STARTED</a>
+  </div>
+</section>
 
-<head>
-    <title>
-        Habit Tracker
-    </title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-
-</head>
-
-<body>
-    <?php
-    require('database.php');
-echo "hello";
-    include("constant/navbar.php");
-
-    ?>
-
-
-
-
-
-</body>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
-    crossorigin="anonymous"></script>
-
-</html>
-<?php
-
-
-
-
+<?php 
+include 'auth/includes/footer.php'; 
 ?>
