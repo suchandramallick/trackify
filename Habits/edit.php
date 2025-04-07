@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $habit) {
 
 // Prepopulate days
 $schedule_days = str_split($habit['schedule'] ?? '0000000');
-$day_keys = ['mon','tue','wed','thu','fri','sat','sun'];
+$day_keys = ['Monday','tue','wed','thu','fri','sat','sun'];
 
 ?>
 
@@ -59,9 +59,13 @@ $day_keys = ['mon','tue','wed','thu','fri','sat','sun'];
 
     <?php if ($error): ?>
       <p class="text-red-500 mb-4"><?php echo htmlspecialchars($error); ?></p>
-    <?php endif; ?>
+    <?php 
+    endif; 
+    ?>
 
-    <?php if ($habit): ?>
+    <?php 
+    if ($habit): 
+    ?>
       <label class="block mb-2 font-semibold">Habit Title</label>
       <input type="text" name="title" value="<?php echo htmlspecialchars($habit['title']); ?>" class="w-full px-3 py-2 border rounded mb-4" required />
 
