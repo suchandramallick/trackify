@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $habit) {
 
 // Prepopulate days
 $schedule_days = str_split($habit['schedule'] ?? '0000000');
-$day_keys = ['Monday','tue','wed','thu','fri','sat','sun'];
+$day_keys = ['Trial','tue','wed','thu','fri','sat','sun'];
 
 ?>
 
