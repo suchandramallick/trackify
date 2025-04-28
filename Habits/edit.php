@@ -5,18 +5,20 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-include '../auth/includes/db.php';
+include '../auth/includes/db.php'; // make sure $conn is defined here (mysqli)
 
 $habit_id = $_GET['id'] ?? null;
 $error = '';
 $habit = null;
 
 if ($habit_id) {
-    $stmt = $pdo->prepare("SELECT * FROM habits WHERE id = ? AND user_id = ?");
-    $stmt->execute([$habit_id, $_SESSION['user_id']]);
-    $habit = $stmt->fetch();
+    $habit_id = intval($habit_id);
+    $user_id = intval($_SESSION['user_id']);
 
-    if (!$habit) {
+    $result = mysqli_query($conn, "SELECT * FROM habits WHERE id = $habit_id AND user_id = $user_id");
+    if ($result && mysqli_num_rows($result) === 1) {
+        $habit = mysqli_fetch_assoc($result);
+    } else {
         $error = "Habit not found or unauthorized.";
     }
 } else {
@@ -30,16 +32,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $habit) {
     $days = $_POST['days'] ?? [];
 
     if (!empty($title)) {
+        $title = mysqli_real_escape_string($conn, $title);
+        $description = mysqli_real_escape_string($conn, $description);
+
         $schedule = '';
         foreach (['mon','tue','wed','thu','fri','sat','sun'] as $day) {
             $schedule .= in_array($day, $days) ? '1' : '0';
         }
 
-        $update = $pdo->prepare("UPDATE habits SET title = ?, description = ?, schedule = ? WHERE id = ? AND user_id = ?");
-        $update->execute([$title, $description, $schedule, $habit_id, $_SESSION['user_id']]);
+        $sql = "UPDATE habits SET title = '$title', description = '$description', schedule = '$schedule' 
+                WHERE id = $habit_id AND user_id = $user_id";
 
-        header("Location: ../dashboard.php");
-        exit;
+        if (mysqli_query($conn, $sql)) {
+            header("Location: ../dashboard.php");
+            exit;
+        } else {
+            $error = "Failed to update habit.";
+        }
     } else {
         $error = "Title cannot be empty.";
     }
@@ -47,8 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $habit) {
 
 // Prepopulate days
 $schedule_days = str_split($habit['schedule'] ?? '0000000');
-$day_keys = ['Trial','tue','wed','thu','fri','sat','sun'];
-
+$day_keys = ['mon','tue','wed','thu','fri','sat','sun'];
 ?>
 
 <?php include '../auth/includes/header.php'; ?>
@@ -59,13 +67,9 @@ $day_keys = ['Trial','tue','wed','thu','fri','sat','sun'];
 
     <?php if ($error): ?>
       <p class="text-red-500 mb-4"><?php echo htmlspecialchars($error); ?></p>
-    <?php 
-    endif; 
-    ?>
+    <?php endif; ?>
 
-    <?php 
-    if ($habit): 
-    ?>
+    <?php if ($habit): ?>
       <label class="block mb-2 font-semibold">Habit Title</label>
       <input type="text" name="title" value="<?php echo htmlspecialchars($habit['title']); ?>" class="w-full px-3 py-2 border rounded mb-4" required />
 
@@ -74,27 +78,18 @@ $day_keys = ['Trial','tue','wed','thu','fri','sat','sun'];
 
       <label class="block mb-2 font-semibold">Repeat On</label>
       <div class="grid grid-cols-7 gap-2 text-sm mb-4">
-        <?php 
-        foreach ($day_keys as $i => $day): ?>
+        <?php foreach ($day_keys as $i => $day): ?>
           <label>
             <input type="checkbox" name="days[]" value="<?php echo $day; ?>" class="mr-1"
-              <?php 
-                if ($schedule_days[$i] === '1') echo 'checked'; 
-            ?>>
-            <?php 
-                echo ucfirst($day); 
-            ?>
+              <?php if ($schedule_days[$i] === '1') echo 'checked'; ?>>
+            <?php echo ucfirst($day); ?>
           </label>
         <?php endforeach; ?>
       </div>
 
       <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Update Habit</button>
-    <?php 
-        endif; 
-    ?>
+    <?php endif; ?>
   </form>
 </div>
 
-<?php 
-    include '../auth/includes/footer.php'; 
-?>
+<?php include '../auth/includes/footer.php'; ?>

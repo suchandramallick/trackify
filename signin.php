@@ -1,36 +1,41 @@
-<?php
-    session_start();
-    require_once 'auth/includes/db.php'; // database connection
+<?php include 'auth/includes/header.php'; ?>
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
-    $confirm = $_POST['confirm'];
+<div class="min-h-screen bg-white flex items-center justify-center px-4">
+  <div class="w-full max-w-md p-8 rounded-lg shadow-lg border border-gray-200">
+    
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <img src="images/Trackify.png" alt="Trackify Logo" class="h-12 w-12">
+    </div>
 
-    if ($password !== $confirm) {
-        $error = "Passwords do not match!";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Invalid email format.";
-    } else {
-        // Hash password
-        $hashed = password_hash($password, PASSWORD_DEFAULT);
+    <!-- Heading -->
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Welcome to Trackify</h2>
+    <p class="text-center text-gray-500 mb-6">Your journey to better habits starts here</p>
 
-        // Check if user already exists
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        if ($stmt->rowCount() > 0) {
-            $error = "Email already registered.";
-        } else {
-            // Insert user
-            $stmt = $pdo->prepare("INSERT INTO users (email, password) VALUES (?, ?)");
-            if ($stmt->execute([$email, $hashed])) {
-                $_SESSION['user'] = $email;
-                header("Location: dashboard.php");
-                exit;
-            } else {
-                $error = "Something went wrong. Try again.";
-            }
-        }
-    }
-}
-    ?>
+    <!-- Email Login Form -->
+    <form method="POST" action="auth/login.php" class="space-y-4">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">EMAIL <span class="text-red-500">*</span></label>
+        <input type="email" name="email" id="email" placeholder="your-email@example.com" required class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">PASSWORD <span class="text-red-500">*</span></label>
+        <input type="password" name="password" id="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 rounded hover:bg-blue-700 transition">
+        Sign In
+      </button>
+    </form>
+
+    <!-- Footer Links -->
+    <p class="text-center text-sm text-gray-600 mt-4">
+      No account? <a href="signup.php" class="text-blue-600 hover:underline">Create an account</a>
+    </p>
+    <p class="text-center text-sm text-gray-500 mt-1">
+      Forgot Password? <a href="#" class="text-blue-600 hover:underline">Reset here</a>
+    </p>
+
+  </div>
+</div>
+
+<?php include 'auth/includes/footer.php'; ?>

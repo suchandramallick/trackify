@@ -1,76 +1,118 @@
 <?php
 session_start();
-include 'auth/includes/db.php'; // PDO connection via $pdo
+include 'auth/includes/db.php'; // make sure this connects to your MySQL
 
-$error = '';
-$success = '';
+$signup_error = '';
+$signup_success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  $email = trim($_POST['email']);
+  $password = $_POST['password'];
+  $re_password = $_POST['re_password'];
+  $fullname=$_POST['full_name'];
+  $userName=$_POST['username'];
 
-    if (!empty($username) && !empty($password)) {
-        // Check if username already exists
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-        $stmt->execute([$username]);
+  // Check if passwords match
+  if ($password !== $re_password) {
+    $signup_error = "Passwords do not match!";
+  } else {
+    // Check if email already exists
+    $check = $conn->prepare("SELECT id FROM User WHERE email = ?");
+    $check->bind_param("s", $email);
+    $check->execute();
+    $check->store_result();
 
-        if ($stmt->rowCount() > 0) {
-            $error = "Username is already taken.";
-        } else {
-            // Hash the password
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-            // Insert new user
-            $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-            if ($stmt->execute([$username, $hashedPassword])) {
-                // Success: Redirect or show success
-                $success = "Account created! You can now log in.";
-                header("Location: login.php");
-                exit;
-            } else {
-                $error = "Something went wrong. Please try again.";
-            }
-        }
+    if ($check->num_rows > 0) {
+      $signup_error = "Email is already registered!";
     } else {
-        $error = "Please fill in all fields.";
+      // Insert into database
+      $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+      $stmt = $conn->prepare("INSERT INTO User (Username,Fullname,email, password) VALUES (?,?,?,?)");
+      $stmt->bind_param("ssss",$userName,$fullname ,$email, $hashed_password);
+      if ($stmt->execute()) {
+        session_start();
+        $_SESSION['user_id'] = $stmt->insert_id;
+        $_SESSION['user_name']=$userName; // Store the new user's ID
+        $_SESSION['email'] = $email;
+
+        header("Location: dashboard.php");
+        exit();
+        // $signup_success = "Signup successful! You can now <a href='signin.php' class='text-blue-600 underline'>Sign In</a>.";
+      } else {
+        $signup_error = "Something went wrong. Please try again.";
+      }
+      $stmt->close();
     }
+
+    $check->close();
+  }
 }
 ?>
 
 <?php include 'auth/includes/header.php'; ?>
 
-<div class="min-h-screen flex items-center justify-center pt-20 bg-cover bg-center"
-     style="background-image: url('assets/images/Trackify.png');">
-  
-  <!-- Optional overlay -->
-  <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+<div class="min-h-screen bg-white flex items-center justify-center px-4">
+  <div class="w-full max-w-md p-8 rounded-lg shadow-lg border border-gray-200">
 
-  <form method="POST" class="relative bg-white bg-opacity-90 p-8 rounded shadow-md text-gray-800 w-96 z-10">
-    <h2 class="text-xl font-bold mb-4 text-center">Create Account</h2>
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <img src="images/Trackify.png" alt="Trackify Logo" class="h-12 w-12">
+    </div>
 
-    <?php if (!empty($error)): ?>
-      <p class="text-red-500 mb-4 text-sm text-center"><?php echo htmlspecialchars($error); ?></p>
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Create new Account</h2>
+    <p class="text-center text-gray-500 mb-4">Your journey to better habits starts here</p>
+
+    <!-- Error/Success Messages -->
+    <?php if ($signup_error): ?>
+      <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4 text-sm"><?= $signup_error ?></div>
+    <?php elseif ($signup_success): ?>
+      <div class="bg-green-100 text-green-700 px-4 py-2 rounded mb-4 text-sm"><?= $signup_success ?></div>
     <?php endif; ?>
 
-    <?php if (!empty($success)): ?>
-      <p class="text-green-500 mb-4 text-sm text-center"><?php echo htmlspecialchars($success); ?></p>
-    <?php endif; ?>
+    <!-- Signup Form -->
+    <form method="POST" action="signup.php" class="space-y-4">
+      <div>
+        <label for="full_name" class="block text-sm font-medium text-gray-700">FULL NAME <span
+            class="text-red-500">*</span></label>
+        <input type="text" name="full_name" id="Full_name" required placeholder="Enter your full_name"
+          class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700">USERNAME <span
+            class="text-red-500">*</span></label>
+        <input type="text" name="username" id="username" required placeholder="Choose a username"
+          class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
 
-    <input name="username" type="text" placeholder="Choose a username"
-           class="w-full px-4 py-2 mb-4 border rounded" required />
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">EMAIL <span
+            class="text-red-500">*</span></label>
+        <input type="email" name="email" id="email" required placeholder="your-email@example.com"
+          class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">PASSWORD <span
+            class="text-red-500">*</span></label>
+        <input type="password" name="password" id="password" required placeholder="Password"
+          class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <div>
+        <label for="re_password" class="block text-sm font-medium text-gray-700">RE-ENTER PASSWORD <span
+            class="text-red-500">*</span></label>
+        <input type="password" name="re_password" id="re_password" required placeholder="Re-enter Password"
+          class="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 rounded hover:bg-blue-700 transition">
+        Sign Up
+      </button>
+    </form>
 
-    <input name="password" type="password" placeholder="Choose a password"
-           class="w-full px-4 py-2 mb-4 border rounded" required />
-
-    <button type="submit"
-            class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition duration-200">
-      Sign Up
-    </button>
-
-    <p class="text-center mt-4 text-sm">
-      Already have an account? <a href="login.php" class="text-blue-600 hover:underline">Log in</a>
+    <!-- Footer -->
+    <p class="text-center text-sm text-gray-600 mt-4">
+      Already have an account? <a href="signin.php" class="text-blue-600 hover:underline">Sign In</a>
     </p>
-  </form>
+
+  </div>
 </div>
 
 <?php include 'auth/includes/footer.php'; ?>

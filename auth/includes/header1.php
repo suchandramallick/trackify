@@ -1,6 +1,10 @@
 <?php 
     include_once 'auth.php'; 
 ?>
+<?php if (isset($_SESSION['user_id'])): ?>
+    <a href="profile.php" class="text-sm text-blue-600 hover:underline ml-4">My Account</a>
+<?php endif; ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,17 +24,8 @@
       <img src="/trackify/images/Trackify.png" alt="Trackify.Logo" class="h-10 w-auto" />
       <span class="text-2xl font-bold text-blue-600 tracking-wider">Trackify</span>
     </div>
-
-    <!-- Navigation Links -->
-    <nav class="hidden md:flex space-x-8 text-sm font-semibold">
-      <a href="index.php" class="text-gray-700 hover:text-blue-600 transition">Home</a>
-      <a href="#about" class="text-gray-700 hover:text-blue-600 transition">About</a>
-      <a href="services.php" class="text-gray-700 hover:text-blue-600 transition">Services</a>
-      <a href="contact.php" class="text-gray-700 hover:text-blue-600 transition">Contact</a>
-    </nav>
-
-    <!-- Auth Buttons -->
-    <div class="space-x-4">
+<!-- Auth Buttons -->
+<div class="space-x-4">
       <a href="login.php" class="px-4 py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-600 hover:text-white transition">Sign In</a>
       <a href="signup.php" class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Sign Up</a>
     </div>
